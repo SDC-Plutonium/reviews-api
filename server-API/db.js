@@ -42,8 +42,29 @@ let getReviews = function (queryParams, callback) {
       .catch((err) => console.log(err));
 }
 
+let getMetaData = function (productId, callback) {
+  console.log('in db', productId)
+  let metaDataFinal = {characteristics: {}, ratings: {}, recommended: {}}
+
+  pool.query(`select recommend, rating from reviews WHERE product_id = ${productId}`)
+      .then((res) => {
+        let recValues = {false: 0, true: 0};
+        let ratingValues = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        for (let item of res.rows) {
+          recValues[item.recommend]++
+          ratingValues[item.rating]++
+        }
+        metaDataFinal.recommended = recValues;
+        metaDataFinal.ratings = ratingValues;
+        return recValues
+      })
+      .then((recValues) => {
+        console.log(metaDataFinal);
+      })
+}
+
 module.exports = {
-  pool, getReviews
+  pool, getReviews, getMetaData
 };
 
 // const {

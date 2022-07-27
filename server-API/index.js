@@ -1,6 +1,6 @@
 const express = require('express');
 require('dotenv').config();
-const { getReviews } = require('./db');
+const { getReviews, getMetaData } = require('./db');
 
 const app = express();
 app.use(express.json());
@@ -29,7 +29,8 @@ app.get('/reviews', (req, res) => {
             result.splice(i, 1);
           }
         }
-        res.status(200).send(result);
+        let clientObject = {product: product_id, page: page, count: count, results: result}
+        res.status(200).send(clientObject);
       }
     })
   }
@@ -38,6 +39,16 @@ app.get('/reviews', (req, res) => {
 // get /reviews/meta
 // params - product_id
 // response 200 ok
+app.get('/reviews/meta', (req, res) => {
+
+  getMetaData(req.query.product_id, (err, result) => {
+    if (err) {
+      rest.status(422).send(err);
+    } else {
+      console.log(result);
+    }
+  })
+})
 
 // post /reviews
 // response 201 created

@@ -14,7 +14,6 @@ pool.connect()
   .catch((err) => console.log(err, 'posgres error'));
 
 let getReviews = function (queryParams, callback) {
-  console.log('in db layer', queryParams);
   pool.query(`select * from reviews WHERE product_id = ${queryParams.product_id}`)
       .then((res) => {
         let reviewResponse = res.rows;
@@ -43,7 +42,6 @@ let getReviews = function (queryParams, callback) {
 }
 
 let getMetaData = function (productId, callback) {
-  console.log('in db', productId)
   let metaDataFinal = {characteristics: {}, ratings: {}, recommended: {}}
 
   pool.query(`select recommend, rating from reviews WHERE product_id = ${productId}`)
@@ -70,8 +68,44 @@ let getMetaData = function (productId, callback) {
               charObj[individualChar] = {id: charChart[individualChar], value: 0}
             }
             metaDataFinal.characteristics = charObj;
-            console.log(metaDataFinal)
           })
+          .then(() => {
+            pool.query(`select id from reviews WHERE product_id = ${productId}`)
+              .then((results) => {
+                let reviewIds = []
+                for ( let review of results.rows) {
+                  reviewIds.push(review.id);
+                }
+                return reviewIds;
+              })
+              .then((reviewIds) => {
+                let transformIds = reviewIds.join(',')
+                pool.query(`select * from characteristics_reviews JOIN characteristics ON characteristics.id = characteristics_reviews.characteristic_id WHERE review_id IN (${transformIds})`)
+                  .then((results) => {
+                    let averager = {}
+                    for (let item of results.rows) {
+                      if (!averager[item.name]) {
+                        averager[item.name] = {count: 1, value: item.value}
+                      } else {
+                        averager[item.name].count++
+                        averager[item.name].value = (averager[item.name].value + item.value) * 5 / 10;
+                      }
+                    }
+
+                    for (let key in averager) {
+                      if (metaDataFinal.characteristics[key]) {
+                        metaDataFinal.characteristics[key].value = averager[key].value
+                      }
+                    }
+                  })
+                  .then(() => {
+                    console.log(metaDataFinal);
+                  })
+                  .catch((err) => console.log(err))
+              })
+              .catch((err) => console.log(err))
+          })
+          .catch((err) => console.log(err))
       })
       .catch((err) => console.log(err))
 }

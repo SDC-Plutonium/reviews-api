@@ -59,8 +59,21 @@ let getMetaData = function (productId, callback) {
         return recValues
       })
       .then((recValues) => {
-        console.log(metaDataFinal);
+        pool.query(`select name from characteristics WHERE product_id = ${productId}`)
+          .then((response) => {
+            let charChart = {
+              Size: 125052, Width: 125053, Comfort: 125033, Fit: 125031, Length: 125032, Quality: 125034,
+            };
+            let charObj = {}
+            for (let char of response.rows) {
+              let individualChar = char.name;
+              charObj[individualChar] = {id: charChart[individualChar], value: 0}
+            }
+            metaDataFinal.characteristics = charObj;
+            console.log(metaDataFinal)
+          })
       })
+      .catch((err) => console.log(err))
 }
 
 module.exports = {

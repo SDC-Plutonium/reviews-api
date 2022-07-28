@@ -99,7 +99,7 @@ let getMetaData = function (productId, callback) {
                     }
                   })
                   .then(() => {
-                    console.log(metaDataFinal);
+                    callback(null, metaDataFinal);
                   })
                   .catch((err) => console.log(err))
               })

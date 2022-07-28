@@ -43,9 +43,9 @@ app.get('/reviews/meta', (req, res) => {
 
   getMetaData(req.query.product_id, (err, result) => {
     if (err) {
-      rest.status(422).send(err);
+      res.status(422).send(err);
     } else {
-      console.log(result);
+      res.status(200).send(result);
     }
   })
 })

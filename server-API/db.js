@@ -72,7 +72,7 @@ let getMetaData = function (productId, callback) {
           .then(() => {
             pool.query(`select id from reviews WHERE product_id = ${productId}`)
               .then((results) => {
-                let reviewIds = []
+                let reviewIds = [];
                 for ( let review of results.rows) {
                   reviewIds.push(review.id);
                 }
@@ -82,37 +82,51 @@ let getMetaData = function (productId, callback) {
                 let transformIds = reviewIds.join(',')
                 pool.query(`select * from characteristics_reviews JOIN characteristics ON characteristics.id = characteristics_reviews.characteristic_id WHERE review_id IN (${transformIds})`)
                   .then((results) => {
-                    let averager = {}
+                    let averager = {};
                     for (let item of results.rows) {
                       if (!averager[item.name]) {
                         averager[item.name] = {count: 1, value: item.value}
                       } else {
-                        averager[item.name].count++
+                        averager[item.name].count++;
                         averager[item.name].value = (averager[item.name].value + item.value) * 5 / 10;
                       }
                     }
 
                     for (let key in averager) {
                       if (metaDataFinal.characteristics[key]) {
-                        metaDataFinal.characteristics[key].value = averager[key].value
+                        metaDataFinal.characteristics[key].value = averager[key].value;
                       }
                     }
                   })
                   .then(() => {
                     callback(null, metaDataFinal);
                   })
-                  .catch((err) => console.log(err))
               })
-              .catch((err) => console.log(err))
           })
-          .catch((err) => console.log(err))
       })
       .catch((err) => console.log(err))
 }
 
+let createNewPost = function (query, callback) {
+  let currentDate = new Date();
+  const text = 'INSERT INTO reviews(id, product_id, rating, date, summary, body, recommend, reported, reviewer_name, reviewer_email, response, helpfulness) VALUES(default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *'
+  const values = [query.product_id, query.rating, currentDate, query.summary, query.body, query.recommend, false, query.name, query.email, 'null', 0];
+
+  pool.query(text, values)
+    .then((res) => {
+      console.log(res.rows)
+    })
+    .catch(err => console.log(err))
+
+    // character table update
+    // pictures table update
+}
+
 module.exports = {
-  pool, getReviews, getMetaData
+  pool, getReviews, getMetaData, createNewPost
 };
+
+
 
 // const {
 //   HOST1, USER, PASSWORD, DB_PORT, DB,

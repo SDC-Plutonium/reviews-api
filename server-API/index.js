@@ -1,6 +1,6 @@
 const express = require('express');
 require('dotenv').config();
-const { getReviews, getMetaData } = require('./db');
+const { getReviews, getMetaData, createNewPost } = require('./db');
 
 const app = express();
 app.use(express.json());
@@ -40,7 +40,6 @@ app.get('/reviews', (req, res) => {
 // params - product_id
 // response 200 ok
 app.get('/reviews/meta', (req, res) => {
-
   getMetaData(req.query.product_id, (err, result) => {
     if (err) {
       res.status(422).send(err);
@@ -52,6 +51,15 @@ app.get('/reviews/meta', (req, res) => {
 
 // post /reviews
 // response 201 created
+app.post('/reviews', (req, res) => {
+  createNewPost(req.query, (err, result) => {
+    if (err) {
+      res.status(422).send(err);
+    } else {
+      res.status(200).send(result);
+    }
+  })
+})
 
 // put reviews/:review_id/helpful
 // incrememet helpful

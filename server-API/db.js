@@ -114,12 +114,23 @@ let createNewPost = function (query, callback) {
 
   pool.query(text, values)
     .then((res) => {
-      console.log(res.rows)
+      let reviewId = res.rows[0].id
+      let photoArray = JSON.parse(query.photos)
+      for (let photo of photoArray) {
+        const qstring = 'INSERT INTO reviews_photos(id, review_id, url) VALUES(default, $1, $2) RETURNING *'
+        const params = [reviewId, photo];
+        pool.query(qstring, params)
+      }
+    })
+    .then(() => {
+      console.log(query);
+      console.log('lets do the next thing now');
     })
     .catch(err => console.log(err))
 
     // character table update
-    // pictures table update
+    // get the characteristic id from the product id in characteristics
+    // load the characteristic id relevant to the appropriate name
 }
 
 module.exports = {

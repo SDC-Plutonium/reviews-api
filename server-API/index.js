@@ -29,6 +29,7 @@ app.get('/reviews', (req, res) => {
             result.splice(i, 1);
           }
         }
+        //for pagination slice by count, and some math to get a certain page based on that count
         let clientObject = {product: product_id, page: page, count: count, results: result}
         res.status(200).send(clientObject);
       }

@@ -28,6 +28,8 @@ app.get('/reviews', (req, res) => {
       } else {
         // manipulate result further from here based on query params
         for(let i = 0; i < result.length; i++) {
+          let tempDate = new Date(Number(result[i].date))
+          result[i].date = tempDate;
           if (result[i].response === 'null') {
             result[i].response = null;
           }

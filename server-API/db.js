@@ -24,7 +24,7 @@ let getReviews = function (queryParams, callback) {
         for (let review of reviewResponse) {
           pool.query(`select * from reviews_photos WHERE review_id = ${review.id}`)
             .then((res) => {
-              review.pictures = res.rows
+              review.photos = res.rows
               i++
               if (i >= reviewResponse.length) {
                 return reviewResponse

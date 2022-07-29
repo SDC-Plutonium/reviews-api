@@ -1,10 +1,12 @@
 require('newrelic');
 require('dotenv').config();
+const cors = require('cors');
 const express = require('express');
 const { getReviews, getMetaData, createNewPost, incrementHelpful, reportReview } = require('./db');
 
 const app = express();
 app.use(express.json());
+app.use(cors(({ origin: '*', methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'] })));
 
 // get /reviews/
 // params - page default 1, count - default 5, sort, product_id
@@ -26,6 +28,9 @@ app.get('/reviews', (req, res) => {
       } else {
         // manipulate result further from here based on query params
         for(let i = 0; i < result.length; i++) {
+          if (result[i].response === 'null') {
+            result[i].response = null;
+          }
           if (result[i].reported === true) {
             result.splice(i, 1);
           }

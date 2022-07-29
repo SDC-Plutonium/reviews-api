@@ -108,29 +108,51 @@ let getMetaData = function (productId, callback) {
 }
 
 let createNewPost = function (query, callback) {
-  let currentDate = new Date();
-  const text = 'INSERT INTO reviews(id, product_id, rating, date, summary, body, recommend, reported, reviewer_name, reviewer_email, response, helpfulness) VALUES(default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *'
-  const values = [query.product_id, query.rating, currentDate, query.summary, query.body, query.recommend, false, query.name, query.email, 'null', 0];
 
-  pool.query(text, values)
+  let characteristicsQuery;
+  let addReviewObjCopy;
+
+  const characString = 'SELECT * FROM characteristics WHERE product_id = $1'
+  const characParams = [query.product_id]
+  pool.query(characString, characParams)
     .then((res) => {
-      let reviewId = res.rows[0].id
-      let photoArray = JSON.parse(query.photos)
-      for (let photo of photoArray) {
-        const qstring = 'INSERT INTO reviews_photos(id, review_id, url) VALUES(default, $1, $2) RETURNING *'
-        const params = [reviewId, photo];
-        pool.query(qstring, params)
+      let characObj = JSON.parse(query.characteristics);
+      let addReviewObj = Object.keys(characObj);
+      if ( addReviewObj.length !== res.rows.length ) {
+        callback('characteristics object does not match product', null);
+        throw "character object does not match product";
       }
+      characteristicsQuery = res.rows;
+      addReviewObjCopy = characObj;
     })
     .then(() => {
-      console.log(query);
-      console.log('lets do the next thing now');
+      let currentDate = new Date();
+      const text = 'INSERT INTO reviews(id, product_id, rating, date, summary, body, recommend, reported, reviewer_name, reviewer_email, response, helpfulness) VALUES(default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *'
+      const values = [query.product_id, query.rating, currentDate, query.summary, query.body, query.recommend, false, query.name, query.email, 'null', 0];
+
+      pool.query(text, values)
+        .then((res) => {
+          let reviewId = res.rows[0].id
+          let photoArray = JSON.parse(query.photos)
+          for (let photo of photoArray) {
+            const qstring = 'INSERT INTO reviews_photos(id, review_id, url) VALUES(default, $1, $2) RETURNING *'
+            const params = [reviewId, photo];
+            pool.query(qstring, params)
+          }
+          return reviewId
+        })
+        .then((reviewId) => {
+          for (let item of characteristicsQuery) {
+            let characReviews = 'INSERT INTO characteristics_reviews(id, characteristic_id, review_id, value) VALUES(default, $1, $2, $3) RETURNING *'
+            let characReviewsVal = [item.id, reviewId, addReviewObjCopy[item.name].value]
+            pool.query(characReviews, characReviewsVal)
+          }
+        })
+        .then(() => {
+          callback(null, 'created');
+        })
     })
     .catch(err => console.log(err))
-
-    // character table update
-    // get the characteristic id from the product id in characteristics
-    // load the characteristic id relevant to the appropriate name
 }
 
 module.exports = {

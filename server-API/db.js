@@ -155,8 +155,29 @@ let createNewPost = function (query, callback) {
     .catch(err => console.log(err))
 }
 
+let incrementHelpful = function (query, callback) {
+  let helpfulQuery = 'UPDATE reviews SET helpfulness = helpfulness + 1 WHERE ID = $1';
+  let helpfulArgs = [query];
+  pool.query(helpfulQuery, helpfulArgs)
+    .then((res) => {
+      callback(null, 'NO CONTENT');
+    })
+    .catch((err) => callback(err, null))
+}
+
+let reportReview = function (query, callback) {
+  let reportedQuery = 'UPDATE reviews SET reported = true WHERE id = $1';
+  let repotedArgs = [query];
+  pool.query(reportedQuery, repotedArgs)
+    .then((res) => {
+      callback(null, 'NO CONTENT');
+    })
+    .catch((err) => callback(err, null))
+}
+
+
 module.exports = {
-  pool, getReviews, getMetaData, createNewPost
+  pool, getReviews, getMetaData, createNewPost, incrementHelpful, reportReview
 };
 
 

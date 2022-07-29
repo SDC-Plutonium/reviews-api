@@ -1,6 +1,6 @@
 const express = require('express');
 require('dotenv').config();
-const { getReviews, getMetaData, createNewPost } = require('./db');
+const { getReviews, getMetaData, createNewPost, incrementHelpful, reportReview } = require('./db');
 
 const app = express();
 app.use(express.json());
@@ -65,10 +65,28 @@ app.post('/reviews', (req, res) => {
 // put reviews/:review_id/helpful
 // incrememet helpful
 // response 204 no content
+app.put('/reviews/:review_id/helpful', (req, res) => {
+  incrementHelpful(req.params.review_id, (err, result) => {
+    if (err) {
+      res.status(422).send(err);
+    } else {
+      res.status(200).send(result);
+    }
+  })
+})
 
 // put /reviews/:review_id/report
 // change reported to true
 // response 204 no content
+app.put('/reviews/:review_id/report', (req, res) => {
+  reportReview(req.params.review_id, (err, result) => {
+    if (err) {
+      res.status(422).send(err);
+    } else {
+      res.status(200).send(result);
+    }
+  })
+})
 
 const port = 3030;
 app.listen(port, () => {

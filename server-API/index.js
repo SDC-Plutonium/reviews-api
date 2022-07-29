@@ -1,5 +1,6 @@
-const express = require('express');
+require('newrelic');
 require('dotenv').config();
+const express = require('express');
 const { getReviews, getMetaData, createNewPost, incrementHelpful, reportReview } = require('./db');
 
 const app = express();

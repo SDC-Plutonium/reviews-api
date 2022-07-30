@@ -2,7 +2,7 @@ require('newrelic');
 require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
-const { testGet,getReviews, getMetaData, createNewPost, incrementHelpful, reportReview } = require('./db');
+const { testGet,getReviews, getMetaData, createNewPost, incrementHelpful, reportReview, testMeta } = require('./db');
 
 const app = express();
 app.use(express.json());
@@ -130,6 +130,17 @@ app.get('/test', (req, res) => {
     })
   }
 })
+
+app.get('/test/meta', (req, res) => {
+  testMeta(req.query.product_id, (err, result) => {
+    if (err) {
+      res.status(422).send(err);
+    } else {
+      res.status(200).send(result);
+    }
+  })
+})
+
 
 const port = 3030;
 app.listen(port, () => {

@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-unused-vars */
+const { query } = require('express');
 const { Pool, Client } = require('pg');
 require('dotenv').config;
 
@@ -12,6 +13,22 @@ const pool = new Pool({
 pool.connect()
   .then(() => console.log('possssgres connected'))
   .catch((err) => console.log(err, 'posgres error'));
+
+
+
+
+let testMeta = function (queryParams, callback) {
+
+  let queryString = `SELECT json_build_object
+  ('ratings', json_build_object('1', (SELECT COUNT(*) FROM reviews WHERE product_id = $1 AND rating = 1))) as characteristics`
+  let queryArgs = [queryParams]
+
+  pool.query(queryString, queryArgs)
+    .then((res) => {
+      console.log(res.rows)
+    })
+    .catch((err) => console.log(err))
+}
 
 let testGet = function (queryParams, callback) {
   let aggString = `SELECT r.id as review_id, product_id, rating, date, summary, body, recommend, reported, reviewer_name, reviewer_email, response, helpfulness, coalesce(rp.photos, '[]') as photos
@@ -57,7 +74,7 @@ let getReviews = function (queryParams, callback) {
             })
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => callback(err, null));
 }
 
 let getMetaData = function (productId, callback) {
@@ -123,7 +140,7 @@ let getMetaData = function (productId, callback) {
               })
           })
       })
-      .catch((err) => console.log(err))
+      .catch((err) => callback(err, null))
 }
 
 let createNewPost = function (query, callback) {
@@ -196,7 +213,7 @@ let reportReview = function (query, callback) {
 
 
 module.exports = {
-  pool, getReviews, getMetaData, createNewPost, incrementHelpful, reportReview, testGet
+  pool, getReviews, getMetaData, createNewPost, incrementHelpful, reportReview, testGet, testMeta
 };
 
 

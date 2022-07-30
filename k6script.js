@@ -10,13 +10,14 @@ export const options = {
 }
 
 // const url = 'http://localhost:3030/reviews?product_id=1000000'
-const url = 'http://localhost:3030/reviews/meta?product_id=1000000'
+// const url = 'http://localhost:3030/reviews/meta?product_id=1000000'
+const url = 'http://localhost:3030/test/?product_id=1000000'
 
 export default function () {
   const res = http.get(url);
   check(res, {
     'is status 200' : r => r.status === 200,
     'transaction time < 50ms': r => r.timings.duration < 50,
-    'transaction time < 100ms': r => r.timings.duration < 75,
+    'transaction time < 100ms': r => r.timings.duration < 100,
   })
 }

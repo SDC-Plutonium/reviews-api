@@ -2,7 +2,7 @@ require('newrelic');
 require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
-const { getReviews, getMetaData, createNewPost, incrementHelpful, reportReview } = require('./db');
+const { testGet,getReviews, getMetaData, createNewPost, incrementHelpful, reportReview } = require('./db');
 
 const app = express();
 app.use(express.json());
@@ -94,6 +94,41 @@ app.put('/reviews/:review_id/report', (req, res) => {
       res.status(200).send(result);
     }
   })
+})
+
+app.get('/test', (req, res) => {
+
+  let page = req.query.page || 1;
+  let count = req.query.count || 5;
+  let sort = req.query.sort || 'relevant';
+  let product_id = req.query.product_id || null;
+  if (product_id === null) {
+    res.status(422).send('invalid product_id provided');
+  }
+
+  if (product_id !== null) {
+    testGet(req.query.product_id, (err, result) => {
+      if (err) {
+        res.status(422).send(err);
+      } else {
+
+
+        for(let i = 0; i < result.length; i++) {
+          let tempDate = new Date(Number(result[i].date))
+          result[i].date = tempDate;
+          if (result[i].response === 'null') {
+            result[i].response = null;
+          }
+          if (result[i].reported === true) {
+            result.splice(i, 1);
+          }
+        }
+
+        let clientObject = {product: product_id, page: page, count: count, results: result}
+        res.status(200).send(clientObject);
+      }
+    })
+  }
 })
 
 const port = 3030;

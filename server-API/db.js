@@ -13,6 +13,26 @@ pool.connect()
   .then(() => console.log('possssgres connected'))
   .catch((err) => console.log(err, 'posgres error'));
 
+let testGet = function (queryParams, callback) {
+  let aggString = `SELECT r.id as review_id, product_id, rating, date, summary, body, recommend, reported, reviewer_name, reviewer_email, response, helpfulness, coalesce(rp.photos, '[]') as photos
+  FROM reviews r
+  left join lateral (
+    select json_agg(json_build_object('id', rp.id, 'url', rp.url)) as photos
+    from reviews_photos rp
+    where rp.review_id = r.id
+    ) rp on true
+  where r.product_id = $1
+  order by r.helpfulness desc, r.date desc
+  `
+  let aggParam = [ queryParams ]
+
+  pool.query(aggString, aggParam)
+    .then((res) => {
+      callback(null, res.rows);
+    })
+    .catch(err => callback(err, null))
+}
+
 let getReviews = function (queryParams, callback) {
   pool.query(`select * from reviews WHERE product_id = ${queryParams.product_id}`)
       .then((res) => {
@@ -35,7 +55,6 @@ let getReviews = function (queryParams, callback) {
                 callback(null, finalResult)
               }
             })
-            .catch((err) => console.log(err))
         }
       })
       .catch((err) => console.log(err));
@@ -177,7 +196,7 @@ let reportReview = function (query, callback) {
 
 
 module.exports = {
-  pool, getReviews, getMetaData, createNewPost, incrementHelpful, reportReview
+  pool, getReviews, getMetaData, createNewPost, incrementHelpful, reportReview, testGet
 };
 
 

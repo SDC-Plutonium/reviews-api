@@ -4,11 +4,26 @@ const { query } = require('express');
 const { Pool, Client } = require('pg');
 require('dotenv').config;
 
-const connectionString = 'postgres://myuser@localhost/sdc';
+// const connectionString = 'postgres://myuser@localhost/sdc';
+
+// const pool = new Pool({
+//   connectionString,
+// });
+
+const {
+  HOST1, USER, DB_PORT, DB, PASSWORD,
+} = process.env;
+
+// console.log( HOST1, USER, DB_PORT, DB);
 
 const pool = new Pool({
-  connectionString,
+  user: USER,
+  host: HOST1,
+  database: DB,
+  password: PASSWORD,
+  port: DB_PORT,
 });
+
 
 pool.connect()
   .then(() => console.log('possssgres connected'))
@@ -215,17 +230,6 @@ let reportReview = function (query, callback) {
 module.exports = {
   pool, getReviews, getMetaData, createNewPost, incrementHelpful, reportReview, testGet, testMeta
 };
-
-
-
-// const {
-//   HOST1, USER, PASSWORD, DB_PORT, DB,
-// } = process.env;
-
-// user: USER,
-// host: HOST1,
-// database: DB,
-// port: DB_PORT,
 
 
 // select * from reviews JOIN reviews_photos ON reviews.id = reviews_photos.review_id WHERE product_id = ${queryParams.product_id}

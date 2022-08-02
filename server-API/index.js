@@ -141,6 +141,8 @@ app.get('/test/meta', (req, res) => {
   })
 })
 
+app.get('/loaderio-f9552be34f7ac793b3639829ecff85dd', (req, res) => res.sendFile(__dirname, './loaderio-f9552be34f7ac793b3639829ecff85dd.txt'))
+
 
 const port = 3030;
 app.listen(port, () => {
